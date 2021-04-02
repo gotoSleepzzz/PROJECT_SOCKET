@@ -7,7 +7,7 @@ REGISTER_CODE = '2'
 
 class Register_Form():
     def __init__(self,server_address):
-        self.flag_exit = False
+        self.flag_exit = False  #to check window close
         self.root = tk.Toplevel()
         self.server_address = server_address
         self.root.title("REGISTER")
@@ -45,14 +45,17 @@ class Register_Form():
                     s.connect(self.server_address)
 
                     s.send(bytes(username,'utf8'))
-
+                    
+                    #check username already exist
                     respond = s.recv(1)
                     flag = respond.decode('utf8')
 
-                    if r == '1':
+                    # flag = 0 mean usernname is not exist
+                    if flag == '0':
                         s.send(bytes(password,'utf8'))
                         tk.messagebox.showinfo("INFO","Success!\nYour account has been created")
-                    elif r == '0':
+                    # flag = 1 mean username was exist
+                    elif flag == '1':
                         tk.messagebox.showerror("ERROR","Account already exists")
                 except:
                     tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
