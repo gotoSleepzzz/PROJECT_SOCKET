@@ -1,9 +1,16 @@
 import login as lgform
 import tkinter as tk
 
-login = lgform.Login_Form()
+HOST = "127.0.0.1"
+PORT = 125000
 
-login.run()
+login = lgform.Login_Form(HOST,PORT)
 
-if login.Role() == 1 or login.Role() == 0:
-    print("LOGIN SUCCESSFULL")
+if login.flag_exit:
+    if login.role == -1:
+        print("LOGIN FAILED")
+        
+    elif login.role == 0:
+        print("YOU'RE CLIENT")
+    elif login.role == 1:
+        print("YOU'RE ADMIN")

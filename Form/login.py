@@ -2,17 +2,84 @@ import tkinter as tk
 from tkinter import messagebox
 import socket
 
-HOST = "192.168.1.7"
-PORT = 61113
-server_address = (HOST,PORT)
 LOGIN_CODE = '1'
+REGISTER_CODE = '2'
+
+class Register_Form():
+    def __init__(self,server_address):
+        self.flag_exit = False
+        self.root = tk.Toplevel()
+        self.server_address = server_address
+        self.root.title("REGISTER")
+        self.root.resizable(0,0)
+
+        scrW = self.root.winfo_screenwidth()
+        scrH = self.root.winfo_screenheight()
+        self.root.geometry('%dx%d+%d+%d'%(scrW/4,scrH/3,scrW/2-scrW/8,scrH/2-scrH/5))
+
+        tk.Label(self.root,text='Username').place(x=70,y=30)
+        tk.Label(self.root,text='Password').place(x=70,y=60)
+        tk.Label(self.root,text='Confirm Password').place(x=70,y=90)
+
+        self.name_input = tk.Entry(self.root, width=20, borderwidth=1)
+        self.passw_input = tk.Entry(self.root, width=20, borderwidth=1, highlightthickness=1, show='*')
+        self.cf_passw_input = tk.Entry(self.root, width=20, borderwidth=1, highlightthickness=1, show='*')
+        self.name_input.place(x=180,y=30)
+        self.passw_input.place(x=180,y=60)
+        self.cf_passw_input.place(x=180,y=90)
+
+        self.register_btn = tk.Button(self.root,text='REGISTER',width=18, justify='center', border=1, command=self.register)
+        self.register_btn.place(x=180,y=150)
+        self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
+        self.root.mainloop()
+
+    def register(self, event = None):
+        username = self.name_input.get()
+        password = self.passw_input.get()
+        confirm_password = self.cf_passw_input.get()
+
+        if username != "" and password != "" and confirm_password != "":
+            if password.lower() == confirm_password.lower():
+                try:
+                    s = socket.socket(sock.AF_INET,socket.SOCK_STREAM)
+                    s.connect(self.server_address)
+
+                    s.send(bytes(username,'utf8'))
+
+                    respond = s.recv(1)
+                    flag = respond.decode('utf8')
+
+                    if r == '1':
+                        s.send(bytes(password,'utf8'))
+                        tk.messagebox.showinfo("INFO","Success!\nYour account has been created")
+                    elif r == '0':
+                        tk.messagebox.showerror("ERROR","Account already exists")
+                except:
+                    tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
+                finally:
+                    s.close()
+            else:
+                tk.messagebox.showerror("ERROR","Password are not matching")
+
+
+
+    def on_closing(self):
+        self.flag_exit = True
+        self.root.quit()
+
+    def close(self):
+        self.root.destroy()
+
+
 
 class Login_Form():
-    def __init__(self):
+    def __init__(self, Host, Port):
+        self.flag_exit = False
         self.role = -1
         self.root = tk.Tk()
         self.root.title("LOGIN")
         self.root.resizable(0,0)
+        self.server_address = (Host,Port)
 
         scrW = self.root.winfo_screenwidth()
         scrH = self.root.winfo_screenheight()
@@ -30,6 +97,7 @@ class Login_Form():
         self.register_btn = tk.Button(self.root,text='REGISTER',width = 18,justify='center', border=1, command=self.register)
         self.login_btn.place(x=180,y=120)
         self.register_btn.place(x=180,y=150)
+        self.root.mainloop()
 
     def login(self, event = None):
         username = self.name_input.get()
@@ -37,7 +105,7 @@ class Login_Form():
         if username != "" and password != "":
             try:
                 s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-                s.connect(server_address)
+                s.connect(self.server_address)
                 
                 s.sendall(bytes(LOGIN_CODE,'utf8'))
                 
@@ -48,6 +116,8 @@ class Login_Form():
                 flag = respond.decode('utf8')
                 
                 print(flag)
+            except:
+                tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
             finally:
                 s.close()
 
@@ -58,17 +128,22 @@ class Login_Form():
             #Client
             elif flag == '0':
                 self.role = 0
-                self.root.quit()
+                self.flag_exit = True
+                self.root.destroy()
             #Admin
             else:
                 self.role = 1
-                self.root.quit()
-
-    def Role(self):
-        return self.role
+                self.flag_exit = True
+                self.root.destroy()
 
     def register(self):
-        pass
+        self.root.withdraw()
+        r_form = Register_Form(self.server_address)
+    
+        if r_form.flag_exit:
+            print("exit")
+            r_form.close()
+            self.root.deiconify()
 
-    def run(self):
-        self.root.mainloop()
+    def close(self):
+        self.root.destroy()
