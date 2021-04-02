@@ -19,6 +19,9 @@ def Handle_Client(client):
 		if (Code == '1'):
 			print(Code)
 			Function_Login(client)
+		elif (Code == '2'):
+			print(Code)
+			Funtion_Register(client)
 
 
 def Function_Login(client):
@@ -39,7 +42,6 @@ def Function_Login(client):
 		client.sendall(bytes(str(value), "utf8"))
 	else:
 		client.sendall(bytes(str(value), "utf8"))
-
 # ham tra ve 0: client , 1:admin , -1: khong ton tai password
 def Check_Login(name, password):
 	cursor = conn.cursor()
@@ -61,6 +63,38 @@ def Check_Login(name, password):
 	else:
 		return -1
 
+def Funtion_Register(client):
+	user_name = client.recv(20).decode("utf8")
+	print(user_name)
+	# check a name exitting in sql
+	cursor = conn.cursor()
+	cursor.execute(
+		"select count(*) from USER_NAME as un where un.NAME = ?" , user_name
+	)
+
+	check = True
+	for i in cursor:
+		if (i[0] != 0):
+			check = False
+			break
+	if (check):
+		# gui gia tri tra ve cho client
+		client.sendall(bytes("0", "utf8"))
+		cursor.execute(
+		 	"select count(*) from USER_NAME un where un.NAME = ?", user_name
+	    )
+		# nhan password
+		password = client.recv(20).decode("utf8")
+		# gui gia tri vao sql
+		cursor.execute(
+			"insert into USER_NAME(NAME, PASS, ROLE_) values(?, ?, ?)",
+			user_name, password, "0"
+		)
+		cursor.commit()
+	else:
+		client.sendall(bytes("1", "utf8"))
+
+
 # tao ket noi voi SQL_SERVER(LIVE_SCORE)
 conn = pyodbc.connect(
 	"driver={SQL Server Native Client 11.0};"
@@ -70,7 +104,7 @@ conn = pyodbc.connect(
 )
 # tao socket server
 Host = ''
-Port = 61113
+Port = 61234
 Address = (Host, Port)
 Size = 100
 

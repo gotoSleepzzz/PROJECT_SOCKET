@@ -39,7 +39,9 @@ class Register_Form():
 
         if username != "" and password != "" and confirm_password != "":
             if password.lower() == confirm_password.lower():
-                try:                   
+                try:
+
+                    self.user_socket.send(bytes(REGISTER_CODE,'utf8'))
                     self.user_socket.send(bytes(username,'utf8'))
                     
                     #check username already exist
