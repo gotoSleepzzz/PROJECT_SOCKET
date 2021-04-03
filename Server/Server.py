@@ -64,12 +64,16 @@ def Check_Login(name, password):
 		for i in cursor:
 			status = i[1]
 			role = i[0]
+			print(i[0])
+			print(i[1])
+			print(i[0] == "Admin")
 		if (status):
 			print("status")
 			return 2
-		if (role == 'admin'):
+		if (role == "Client"):
+			return 0
+		else: 
 			return 1
-		else: return 0
 	else:
 		return -1
 
@@ -97,8 +101,8 @@ def Funtion_Register(client):
 		password = client.recv(20).decode("utf8")
 		# gui gia tri vao sql
 		cursor.execute(
-			"insert into ACCOUNT(NAME, PASS, ROLE_, STATUS_) values(?, ?, ?, ?)",
-			user_name, password, "0", 0
+			"insert into ACCOUNT(USERNAME_, PASSWORD_, ROLE_, STATUS_) values(?, ?, ?, ?)",
+			user_name, password, "Client", False
 		)
 		cursor.commit()
 	else:
@@ -107,13 +111,13 @@ def Funtion_Register(client):
 
 # tao ket noi voi SQL_SERVER(LIVE_SCORE)
 conn = pyodbc.connect(
-	"driver={SQL Server Native Client 11.0};"
-	"Server=MAYTINH-CD1NVG5\SQLEXPRESS;"
+	"driver={ODBC Driver 17 for SQL Server};"
+	"Server=THONGNGUYENAZ;"
 	"Database=LIVE_SCORE;"
 	"Trusted_Connection=yes"
 )
 # tao socket server
-Host = ""
+Host = "127.0.0.1"
 Port = 61234
 Address = (Host, Port)
 Size = 100

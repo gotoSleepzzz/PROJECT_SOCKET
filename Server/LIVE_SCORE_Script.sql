@@ -6,9 +6,9 @@ go
 
 create table ACCOUNT
 (
-	USERNAME_ nvarchar(20),
-	PASSWORD_ nvarchar(20),
-	ROLE_ nchar(6),
+	USERNAME_ varchar(20),
+	PASSWORD_ varchar(20),
+	ROLE_ varchar(6),
 	STATUS_ bit
 	primary key (USERNAME_)
 )
