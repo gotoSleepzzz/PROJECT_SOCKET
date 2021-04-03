@@ -52,6 +52,7 @@ class Register_Form():
                     if flag == '0':
                         self.user_socket.send(bytes(password,'utf8'))
                         tk.messagebox.showinfo("INFO","Success!\nYour account has been created")
+                        self.on_closing()
                     # flag = 1 mean username was exist
                     elif flag == '1':
                         tk.messagebox.showerror("ERROR","Account already exists")
@@ -77,7 +78,7 @@ class Login_Form():
     def __init__(self, user_socket):
         self.flag_exit = False
         self.role = -1
-        self.root = tk.Tk()
+        self.root = tk.Toplevel()
         self.root.title("LOGIN")
         self.root.resizable(0,0)
         self.user_socket = user_socket
@@ -119,19 +120,17 @@ class Login_Form():
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
             #No account
-            if flag == '-1':
+            if flag == '3':
                 tk.messagebox.showinfo("Show info","Account does not exist")
                 self.role = -1
             #Client
             elif flag == '0':
                 self.role = 0
-                self.flag_exit = True
-                self.root.quit()
+                self.on_closing()
             #Admin
             elif flag == '1':
                 self.role = 1
-                self.flag_exit = True
-                self.root.quit()
+                self.on_closing()
             elif flag == "2":
                 tk.messagebox.showwarning("Warning","Your account login from another device!")
 
@@ -146,6 +145,9 @@ class Login_Form():
 
     def on_closing(self):
         self.flag_exit = True
+        self.root.quit()
+
+    def close(self):
         self.root.destroy()
 
     def run(self):
