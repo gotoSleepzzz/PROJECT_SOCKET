@@ -40,9 +40,9 @@ class Register_Form():
         if username != "" and password != "" and confirm_password != "":
             if password.lower() == confirm_password.lower():
                 try:
-
-                    self.user_socket.send(bytes(REGISTER_CODE,'utf8'))
-                    self.user_socket.send(bytes(username,'utf8'))
+                    self.user_socket.sendall(bytes(REGISTER_CODE,'utf8'))
+                                       
+                    self.user_socket.sendall(bytes(username,'utf8'))
                     
                     #check username already exist
                     respond = self.user_socket.recv(1)
@@ -109,8 +109,14 @@ class Login_Form():
                 self.user_socket.sendall(bytes(username,'utf8'))
                 r = self.user_socket.recv(100)
                 self.user_socket.sendall(bytes(password,'utf8'))
-                respond = self.user_socket.recv(100)
-                flag = respond.decode('utf8')
+                respond = self.user_socket.recv(1)
+                status = respond.decode('utf8')
+                #status = 0 mean user is not working now
+                if status == '0':
+                    respond = self.user_socket.recv(1)
+                    flag = respond.decode('utf8')
+                else:
+                    flag = ""
             except:
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
@@ -128,6 +134,8 @@ class Login_Form():
                 self.role = 1
                 self.flag_exit = True
                 self.root.destroy()
+            elif flag == "":
+                tk.messagebox.showwarning("Warning","Your account login from another device!")
 
     def register(self):
         self.root.withdraw()
