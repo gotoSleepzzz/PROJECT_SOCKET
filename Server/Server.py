@@ -37,6 +37,7 @@ def Function_Login(client):
 
 	# check login
 	value = Check_Login(name, password)
+	print("Value:" + str(value))
 	if (value == -1):
 		#gui du lieu di client
 		client.sendall(bytes(str(value), "utf8"))
@@ -48,18 +49,27 @@ def Check_Login(name, password):
 	cursor.execute(
 		"select count(*) from ACCOUNT as un where un.USERNAME_ = ? and un.PASSWORD_= ?",(name,password)
 	)
+	# check account co xuat hien trong database hay khong
 	for i in cursor:
 		if (i[0] == 1):
 			check = True
 		else:
 			check = False
+
 	if (check == True):
 		cursor.execute(
 			"select un.ROLE_, un.STATUS_ from ACCOUNT as un where un.USERNAME_ = ? and un.PASSWORD_= ?",(name,password)
 		)
+		# check trang thai hoat dong cua no
 		for i in cursor:
-			Value = i[0]
-		return Value
+			status = i[1]
+			role = i[0]
+		if (status):
+			print("status")
+			return 2
+		if (role == 'admin'):
+			return 1
+		else: return 0
 	else:
 		return -1
 
@@ -97,13 +107,13 @@ def Funtion_Register(client):
 
 # tao ket noi voi SQL_SERVER(LIVE_SCORE)
 conn = pyodbc.connect(
-	"driver={ODBC Driver 17 for SQL Server};"
-	"Server=THONGNGUYENAZ;"
+	"driver={SQL Server Native Client 11.0};"
+	"Server=MAYTINH-CD1NVG5\SQLEXPRESS;"
 	"Database=LIVE_SCORE;"
 	"Trusted_Connection=yes"
 )
 # tao socket server
-Host = "127.0.0.1"
+Host = ""
 Port = 61234
 Address = (Host, Port)
 Size = 100

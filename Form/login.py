@@ -114,12 +114,6 @@ class Login_Form():
                 respond = self.user_socket.recv(1)
                 flag = respond.decode('utf8')
 
-                respond = self.user_socket.recv(1)
-                status = respond.decode('utf8')
-
-                if flag == '0' or flag == '1'
-                    if status == '1':
-                        flag = ""
             except:
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
@@ -137,7 +131,7 @@ class Login_Form():
                 self.role = 1
                 self.flag_exit = True
                 self.root.destroy()
-            elif flag == "":
+            elif flag == "2":
                 tk.messagebox.showwarning("Warning","Your account login from another device!")
 
     def register(self):
