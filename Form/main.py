@@ -4,7 +4,7 @@ import client as cl
 import tkinter as tk
 import socket
 
-HOST = "172.19.200.104"
+HOST = "127.0.0.1"
 PORT = 61234
 server_address = (HOST,PORT)
 global user
@@ -23,11 +23,11 @@ try:
             elif login.role == 0:
                 print("YOU'RE CLIENT")
                 user = cl.Client_Form(user_socket)
-                user.run()
             elif login.role == 1:
                 print("YOU'RE ADMIN")
                 user = ad.Admin_Form(user_socket)
-                user.run()
+
+        user.run()
 
         if user.flag_exit:
             if not user.flag_logout:

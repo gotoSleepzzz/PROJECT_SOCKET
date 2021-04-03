@@ -98,6 +98,7 @@ class Login_Form():
         self.register_btn = tk.Button(self.root,text='REGISTER',width = 17,justify='center', border=1, command=self.register)
         self.login_btn.place(x=180,y=120)
         self.register_btn.place(x=180,y=150)
+        self.root.protocol("WM_DELETE_WINDOW",self.on_closing)
 
     def login(self, event = None):
         username = self.name_input.get()
@@ -113,7 +114,7 @@ class Login_Form():
 
                 respond = self.user_socket.recv(1)
                 flag = respond.decode('utf8')
-
+                print(flag)
             except:
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
@@ -125,12 +126,12 @@ class Login_Form():
             elif flag == '0':
                 self.role = 0
                 self.flag_exit = True
-                self.root.destroy()
+                self.root.quit()
             #Admin
             elif flag == '1':
                 self.role = 1
                 self.flag_exit = True
-                self.root.destroy()
+                self.root.quit()
             elif flag == "2":
                 tk.messagebox.showwarning("Warning","Your account login from another device!")
 
@@ -143,7 +144,8 @@ class Login_Form():
             r_form.close()
             self.root.deiconify()
 
-    def close(self):
+    def on_closing(self):
+        self.flag_exit = True
         self.root.destroy()
 
     def run(self):
