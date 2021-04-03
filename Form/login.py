@@ -68,6 +68,7 @@ class Register_Form():
         self.root.destroy()
 
     def run(self):
+        self.flag_exit = False
         self.root.mainloop()
 
 
@@ -109,14 +110,16 @@ class Login_Form():
                 self.user_socket.sendall(bytes(username,'utf8'))
                 r = self.user_socket.recv(100)
                 self.user_socket.sendall(bytes(password,'utf8'))
+
+                respond = self.user_socket.recv(1)
+                flag = respond.decode('utf8')
+
                 respond = self.user_socket.recv(1)
                 status = respond.decode('utf8')
-                #status = 0 mean user is not working now
-                if status == '0':
-                    respond = self.user_socket.recv(1)
-                    flag = respond.decode('utf8')
-                else:
-                    flag = ""
+
+                if flag == '0' or flag == '1'
+                    if status == '1':
+                        flag = ""
             except:
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
@@ -150,4 +153,5 @@ class Login_Form():
         self.root.destroy()
 
     def run(self):
+        self.flag_exit = False
         self.root.mainloop()
