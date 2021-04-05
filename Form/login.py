@@ -71,8 +71,6 @@ class Register_Form():
         self.flag_exit = False
         self.root.mainloop()
 
-
-
 class Login_Form():
     def __init__(self, user_socket):
         self.flag_exit = False
@@ -119,7 +117,7 @@ class Login_Form():
                 tk.messagebox.showwarning("Warning","Oops!\nSomething went wrong.")
 
             #No account
-            if flag == '-1':
+            if flag == '3':
                 tk.messagebox.showinfo("Show info","Account does not exist")
                 self.role = -1
             #Client
