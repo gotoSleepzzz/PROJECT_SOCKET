@@ -8,65 +8,44 @@ def Action():
 		client , add = Server.accept()
 		print('%s:%s connected to Server' %add)
 		#xu li thread
-		Active_client = threading.Thread(target=Handle_Client, args=(client,))
+		Active_client = threading.Thread(target=Handle_Client, args=(client, add))
 		Active_client.start()
 
-def Handle_Client(client):
+def Handle_Client(client, address):
 	# Nhan lenh tu client
 	while(True):
 		Code = client.recv(1).decode("utf8")
 		if (Code == '1'):
-			print(Code)
+			print('(%s:%s): Login' %address)
 			Function_Login(client)
 		elif (Code == '2'):
-			print(Code)
+			print('(%s:%s): Register' %address)
 			Funtion_Register(client)
 
 def Function_Login(client):
-	# try:		
-	# 	# nhan name va password cua client
-	# 	name1 = client.recv(Size)
-	# 	name = name1.decode("utf8")
-	# 	client.sendall(bytes("r","utf8"))
-	# 	print(name)
-
-	# 	password1 = client.recv(Size)
-	# 	password = password1.decode("utf8")
-	# 	print(password)
-
-	# 	# check login
-	# 	value = Check_Login(name, password)
-	# 	print("Value:" + str(value))
-	# 	if (value == -1):
-	# 		#gui du lieu di client
-	# 		client.sendall(bytes(str(value), "utf8"))
-	# 	else:
-	# 		client.sendall(bytes(str(value), "utf8"))
-	# except:
-	# 	print("loi trong Function_Login")
-		# 	# nhan name va password cua client
 	name1 = client.recv(Size)
 	name = name1.decode("utf8")
 	client.sendall(bytes("r","utf8"))
-	print(name)
 
 	password1 = client.recv(Size)
 	password = password1.decode("utf8")
-	print(password)
 
 	# check login
 	value = Check_Login(name, password)
-	print("Value:" + str(value))
+
 	if (value == -1):
 		#gui du lieu di client
 		client.sendall(bytes(str(value), "utf8"))
 	else:
 		client.sendall(bytes(str(value), "utf8"))
 
+
 # ham tra ve 0: client , 1:admin , -1: khong ton tai password
 def Check_Login(name, password):
-	conn = sqlite3.connect('DATABASE.db')
+	# check trang thai
+	value = 0
 
+	conn = sqlite3.connect('DATABASE.db')
 	cursor = conn.cursor()
 	cursor.execute(
 		"select count(*) from ACCOUNTS as un where un.USERNAME_ = ? and un.PASSWORD_= ?",(name,password)
@@ -86,19 +65,23 @@ def Check_Login(name, password):
 		for i in cursor:
 			status = i[1]
 			role = i[0]
-			print(i[0])
-			print(i[1])
-			print(i[0] == "Admin")
 		if (status):
-			print("status")
-			return 2
+			value =  2
 		if (role == "Client"):
-			return 0
+			value =  0
 		else: 
-			return 1
+			value = 1
 	else:
-		return 3
+		value = 3
+	# thay doi trang thai status trong database
+	if (value == 1 or value == 0):
+		cursor.execute(
+			"""UPDATE ACCOUNTS as us SET us.STATUS_ = '1' where us.USERNAME_ = ? and un.PASSWORD_ = ? """, (name, password)
+		)
+
+	conn.commit()
 	conn.close()
+	return value
 
 def Funtion_Register(client):
 	conn = sqlite3.connect('DATABASE.db')
@@ -137,7 +120,7 @@ def Funtion_Register(client):
 
 # tao socket server
 Host = ""
-Port = 61222
+Port = 61223
 Address = (Host, Port)
 Size = 100
 

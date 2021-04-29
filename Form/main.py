@@ -5,7 +5,7 @@ import tkinter as tk
 import socket
 
 HOST = "127.0.0.1"
-PORT = 61234
+PORT = 61223
 server_address = (HOST,PORT)
 root = tk.Tk()
 root.withdraw()
