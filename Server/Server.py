@@ -5,10 +5,26 @@ from tkinter import ttk
 from socket import *
 import sqlite3
 from datetime import datetime
+import crawl as C
 
-# def on_closing():
-# 	Server.close()
-# 	window.destroy()
+
+#=============================== Define control code ===============================#
+QUIT             =  '0'
+LOGIN  			 =  'L'
+REGISTER         =  'R'
+
+# admin
+LIST_ALL         = '3'
+ADD_NEW          = '4'
+UPDATE           = '5'
+DISPLAY          = '6'
+RESET            = '7'
+
+#Client
+SEARCH           = '8'
+
+
+#=============================== +++++++++++++++++++++++++ ===============================#
 
 class Server(Tk):
 	def __init__(self):
@@ -43,7 +59,6 @@ class Server(Tk):
 
 		self.status_label = Label(self.fr2,textvariable = self.status,fg = 'red',font = ('time new roman',13))
 		self.status_label.pack(side = LEFT)
-
 
 
 		self.acces_log_detail = ttk.Treeview(self.fr3,selectmode = 'browse',height = 20)
@@ -107,7 +122,7 @@ class Server(Tk):
 		while (True):
 			try:
 				client , add = self.Server.accept()
-				self.acces_log_detail.insert('', 'end',value = ('Connected', str(add[1]) ,  add[0], self.getDateTime(),''))
+				self.acces_log_detail.insert('', 'end',value = ('Connected', '' ,  add[0], self.getDateTime(),''))
 
 				#xu li thread
 				Active_client = Thread(target=self.Handle_Client, args=(client, add))
@@ -124,17 +139,144 @@ class Server(Tk):
 			func_ = ''
 			while True:
 				Code = client.recv(1).decode("utf8")
+				#===============START==================
+
+				# Code: xong , Test: roi
 				# Login
-				if (Code == '1'):
+				if (Code == LOGIN):
 					print("login")
 					name_, fun_ = self.Function_Login(client)
 					self.acces_log_detail.insert('', 'end',value = ('Login', name_, add[0], self.getDateTime(), fun_))
 
+				# Code: xong , Test: roi
 				#Register
-				elif (Code == '2'):
+				elif (Code == REGISTER):
 					print("Register")
 					name_, fun_ = self.Funtion_Register(client)
-					self.acces_log_detail.insert('', 'end',value = ('Register', name_, add[0], self.getDateTime(), fun_))
+					self.acces_log_detail.insert('', 'end',value = ('Register', name_, add[0] ,self.getDateTime(), fun_))
+
+				#================CLIENT==================
+				# Code: xong , Test: chua
+				elif (Code == LIST_ALL):
+					# gui tat ca du lieu cho server
+					print("List_all")
+					conn = sqlite3.connect("DATABASE.db")
+					c = conn.cursor()
+					c.execute(
+						"select * from MATCH"
+					)
+					for i in c:
+						# send ID
+						client.sendall(bytes(str(i[0]),'utf8'))
+						client.recv(1)
+						#send Club1
+						client.sendall(bytes(str(i[1]),'utf8'))
+						client.recv(1)
+						#send Club2
+						client.sendall(bytes(str(i[2]),'utf8'))
+						client.recv(1)
+						#send Score
+						client.sendall(bytes(str(i[3]),'utf8'))
+						client.recv(1)
+						#send Date
+						client.sendall(bytes(str(i[4]),'utf8'))
+						client.recv(1)
+						#send Min
+						client.sendall(bytes(str(i[5]),'utf8'))
+						client.recv(1)
+
+					# send lenh de dung
+					client.sendall(bytes("END",'utf8'))
+					client.recv(1)
+
+					conn.close() 
+
+				# Code: xong , Test: chua
+				elif (Code == SEARCH):
+					# rec ID
+					ID_ = client.recv(20).decode('utf8')
+					client.sendall(bytes("1", 'utf8'))
+
+					# Search Event from database
+					conn = sqlite3.connect("DATABASE.db")
+					c = conn.cursor()
+					c.execute("select * from EVENT_MATCH where ID_MATCH = ? order by TIME_  asc",[ID_])
+
+					for i in c:
+						# Send Club
+						client.sendall(bytes(i[1], 'utf8'))
+						client.recv(1)
+						# Send Min
+						client.sendall(bytes(i[2], 'utf8'))
+						client.recv(1)
+						# Send Name_player
+						client.sendall(bytes(i[3], 'utf8'))
+						client.recv(1)
+						# Send Event
+						client.sendall(bytes(i[4], 'utf8'))
+						client.recv(1)
+						# Send score
+						client.sendall(bytes(i[5], 'utf8'))
+						client.recv(1)
+
+					# Send the End
+					client.sendall(bytes("END", 'utf8'))
+					client.recv(1) 
+
+				# Code: xong , Test: chua
+				elif (Code == DISPLAY):
+					print("display")
+					# rev Date
+					Date_ = client.recv(20).decode('utf8')
+					client.sendall(bytes("1", 'utf8'))
+
+					# send data to client
+					conn = sqlite3.connect('DATABASE.db')
+					c = conn.cursor()
+					c.execute("select * from MATCH where DATE_ = ?", [Date_])
+
+					for i in c:
+						# send ID
+						client.sendall(bytes(str(i[0]),'utf8'))
+						client.recv(1)
+						#send Club1
+						client.sendall(bytes(str(i[1]),'utf8'))
+						client.recv(1)
+						#send Club2
+						client.sendall(bytes(str(i[2]),'utf8'))
+						client.recv(1)
+						#send Score
+						client.sendall(bytes(str(i[3]),'utf8'))
+						client.recv(1)
+						#send Date
+						client.sendall(bytes(str(i[4]),'utf8'))
+						client.recv(1)
+						#send Min
+						client.sendall(bytes(str(i[5]),'utf8'))
+						client.recv(1)
+					#Send the END
+					client.sendall(bytes("END", "utf8"))
+					client.recv(1)
+
+				# Code: chu , Test: chua
+				#================ADMIN=================
+				elif (Code == ADD_NEW):
+					print("add new")  
+
+				# Code: chua , Test: chua
+				elif (Code == UPDATE):
+					print("update")
+
+				# Code: xong , Test: chua
+				elif (Code == RESET):
+					print("reset")
+					S = C.Crawl()
+					S.Run()
+					S.commit()
+
+
+				
+
 		except Exception as e:
 			print(e)
 			print("Close")
@@ -204,6 +346,7 @@ class Server(Tk):
 
 		conn.commit()
 		conn.close()
+		
 		return value
 	
 	def Funtion_Register(self, client):
