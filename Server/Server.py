@@ -94,6 +94,15 @@ class Server(Tk):
 			self.Server = socket(AF_INET,SOCK_STREAM)
 			self.Server.bind(self.Address)
 
+			# fix lai database
+			conn = sqlite3.connect('DATABASE.db')
+			c = conn.cursor()
+			c.execute("""
+				update ACCOUNTS set STATUS_ = ? """, [0]
+			)
+			conn.commit()
+			conn.close()
+
 			# Write code thread here
 			self.Server.listen(5)
 			Z = Thread(target=self.Action)
