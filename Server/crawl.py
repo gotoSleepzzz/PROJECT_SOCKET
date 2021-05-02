@@ -29,7 +29,17 @@ class Crawl():
 				""",(str(id_), club1, club2, score, date_, min_)
 				)
 	 		except:
-	 			t = 1
+	 			# update 
+	 			self.c.execute("""
+	 				update MATCH set SCORE = ? , TIME_SCORE = ? where ID_MATCH = ?
+	 			""", (score, min_, str(id_))
+	 			)
+
 	def Commit(self):
 		self.conn.commit()
 		self.conn.close()
+
+# if __name__ == "__main__":
+# 	s = Crawl()
+# 	s.Run()
+# 	s.Commit()

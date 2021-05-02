@@ -15,6 +15,10 @@ SEARCH                  =    'S'
 REFRESH                 =    'E'
 LISTALL                 =    'A'
 UPDATE                  =    'U'
+ADDNEW                  =    'N'
+RELOAD                  =    'D'
+UPDATE_EVENT            =    'T'
+QUIT                    =    'Q'
 
 class Admin(Toplevel):
     def __init__(self,user_socket,master = None):
@@ -156,7 +160,8 @@ class Admin(Toplevel):
         try:
             def add():
                 self.user_socket.sendall(bytes(ADDNEW,'utf8'))
-                self.user_socket.recv(1)    
+                self.user_socket.recv(1)
+
                 self.user_socket.sendall(bytes(id_.get(),'utf8'))
                 self.user_socket.recv(1)
                 self.user_socket.sendall(bytes(time.get(),'utf8'))
@@ -167,19 +172,30 @@ class Admin(Toplevel):
                 self.user_socket.recv(1)
                 self.user_socket.sendall(bytes(teamB.get(),'utf8'))
                 self.user_socket.recv(1)
-                self.user_socket.sendall(bytes(cal.get_date().year,'utf8'))
-                self.user_socket.recv(1)
-                self.user_socket.sendall(bytes(cal.get_date().month,'utf8'))
-                self.user_socket.recv(1)
-                self.user_socket.sendall(bytes(cal.get_date().day,'utf8'))
 
-                flag = self.user_socket.recv(1)
+                y = str(self.cal.get_date().year)
+                m = str(self.cal.get_date().month)
+                d = str(self.cal.get_date().day)
+                if (len(m) == 1):
+                	m = "0" + m
+                if (len(d) == 1):
+                	d = "0" + d
+                date_ = y + "/" + m + "/" + d
 
+                self.user_socket.sendall(bytes(date_, "utf8"))
+                self.user_socket.recv(1)
+
+                flag = self.user_socket.recv(1).decode("utf8")
+                self.user_socket.sendall(bytes("1", "utf8"))
+                
+
+                print("flag ne:" + flag)
                 if flag == '0':
                     messagebox.showinfo('System','Add new success!')
                 elif flag == '1':
                     messagebox.showwarning('System','Score Id was exists')
                 pass
+                
             t = Toplevel()
             t.grab_set()
             id_ = Entry(t,bd=0,width = 25,font =('time new roman',21))
@@ -210,173 +226,124 @@ class Admin(Toplevel):
 
     def update(self):
         try:
-            # self.user_socket.sendall(bytes(UPDATE,'utf8'))
-            # self.user_socket.recv(1)
-            def check():
-                # self.user_socket.sendall(bytes(SEARCH,'utf8'))
-                # self.user_socket.sendall(bytes(id_.get(),'utf8'))
-                # flag = self.user_socket.recv(1).decode('utf8')
+            def update_1():
+                self.user_socket.sendall(bytes(UPDATE,'utf8'))
+                self.user_socket.recv(1)
+
+                self.user_socket.sendall(bytes(id_.get(),'utf8'))
+                #self.user_socket.recv(1)
+
+                flag = self.user_socket.recv(1).decode('utf8')
+                self.user_socket.sendall(bytes("1", "utf8"))
+
+                ID_ = id_.get()
+
                 if flag == '1':
-                    time = Label(fr3,width = 8,font = 12,borderwidth = 1,relief = 'solid')
-                    time.grid(column = 0,row= 0)
-                    teamA = Label(fr3,width = 20,font = 12,borderwidth = 1,relief = 'solid')
-                    teamA.grid(column = 1,row= 0)
-                    teamB = Label(fr3,width = 20,font = 12,borderwidth = 1,relief = 'solid')
-                    teamB.grid(column = 2,row= 0)
+                	print("co nhe tk ngu")
+                	# nhan Doi 1
+                	team_a = self.user_socket.recv(1024).decode("utf8")
+                	self.user_socket.sendall(bytes("1", "utf8"))
 
-                    # nhan time
-                    text = self.user_socket.recv(2048).decode('utf8')
-                    self.user_socket.sendall(bytes('1','utf8'))
-                    time.configure(text = text)
+                	# nhan Doi 2
+                	team_b = self.user_socket.recv(1024).decode("utf8")
+                	self.user_socket.sendall(bytes("1", "utf8"))
 
-                    # nhan ten doi 1
-                    teamA_name = self.user_socket.recv(2048).decode('utf8')
-                    self.user_socket.sendall(bytes('1','utf8'))
-                    teamA.configure(text = teamA_name)
+                	t1 = Toplevel()
+                	t1.grab_set()
+                	t1.geometry("200x200")
+                	t1.title("Update Event")
 
-                    # nhan ten doi 2
-                    teamB_name = self.user_socket.recv(2048).decode('utf8')
-                    self.user_socket.sendall(bytes('1','utf8'))
-                    teamB.configure(text = teamB_name)
+                	label = Label(t1, text=ID_, fg='Blue', bg='white', bd=0, font=('time new roman', 15))
+                	label.pack()
+                	en = Entry(t1, bd=3, width=25)
+                	en.insert(0, "Time")
+                	en.pack()
+                	envent = Entry(t1, bd=3, width=25)
+                	envent.insert(0, "Event")
+                	envent.pack()
+                	clicked = StringVar()
+                	clicked.set(team_a)
+                	drop = OptionMenu(t1, clicked, team_a, team_b)
+                	drop.pack()
+                	but = Button(t1, text="ADD_EVENT", bd=3, width=10, justify=CENTER,command= lambda: self.UPDATE_EVENT(ID_,clicked.get(), en.get(), envent.get()))
+                	but.place(x=56, y=150)
 
-                    # khoang trong
-                    temp = Label(t,width = 48,font = 12)
-                    temp.grid(column = 0,row = 1,columnspan = 3)
-
-                    row = 2
-                    i = 0
-                    event_time = []
-                    event_A = []
-                    event_B = []
-                    while True:
-                        # nhan thoi gian xay ra su kien
-                        text = self.user_socket.recv(2048).decode('utf8')
-                        self.user_socket.sendall(bytes('1','utf8'))
-                        if text == '_END_':
-                            break
-                        # nhan ten doi co su kien
-                        event_team = self.user_socket.recv(2048).decode('utf8')
-                        self.user_socket.sendall(bytes('1','utf8'))
-                        # nhan ten su kien
-                        event_ = self.user_socket.recv(2048).decode('utf8')
-                        self.user_socket.sendall(bytes('1','utf8'))
-
-                        event_time[i] = Label(fr3,width=8,font=12,borderwidth = 1,relief = 'groove')
-                        event_time[i].grid(column = 0,row = row)
-                        event_time[i].configure(text = text)
-
-                        event_A[i] = Label(fr3,width = 20,font = 12,borderwidth = 1,relief = 'groove')
-                        event_A[i].grid(column = 1,row = row)
-                        event_B[i] = Label(fr3,width = 20,font = 12,borderwidth = 1,relief = 'groove')
-                        event_B[i].grid(column = 2,row = row)
-
-                        if event_team == teamA_name:
-                            event_A[i].configure(text = event_)
-                        elif event_team == teamB_name:
-                            event_B[i].configure(text = event_)
-                        i = i + 1
-                        row = row + 1
                 elif flag == '0':
                     messagebox.showwarning('Search','Cant find that id')
                 pass
-            def update_score():
-                def send_score():
-                    self.user_socket.sendall(bytes(id_input.get(),'utf8'))
-                    if self.user_socket.recv(1).decode('utf8'):
-                        messagebox.showinfo('Update','Success!')
-                    else:
-                        messagebox.showinfo('Update','Failed!')
-                    pass
-                s = Toplevel()
-                s.grab_set()
-                id_input = Entry(s,bd=3,width = 25)
-                id_input.insert(0,"Input new score")
-                id_input.pack(side=LEFT, padx=10,pady=10)
-                k = Button(s,text='Update',command=send_score)
-                k.pack(side=LEFT, padx=10,pady=10)
-                s.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(s))
-                pass
-            def udate_time():
-                def send_time():
-                    self.user_socket.sendall(bytes(id_input.get(),'utf8'))
-                    if self.user_socket.recv(1).decode('utf8'):
-                        messagebox.showinfo('Update','Success!')
-                    else:
-                        messagebox.showinfo('Update','Failed!')
-                    pass
-                s = Toplevel()
-                s.grab_set()
-                id_input = Entry(s,bd=3,width = 25)
-                id_input.insert(0,"Input new time")
-                id_input.pack(side=LEFT, padx=10,pady=10)
-                k = Button(s,text='Update',command=send_time)
-                k.pack(side=LEFT, padx=10,pady=10)
-                s.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(s))
-                pass
-            def update_event():
-                def send_event():
-                    self.user_socket.sendall(bytes(id_input.get(),'utf8'))
-                    if self.user_socket.recv(1).decode('utf8'):
-                        messagebox.showinfo('Update','Success!')
-                    else:
-                        messagebox.showinfo('Update','Failed!')
-                    pass
-                s = Toplevel()
-                s.grab_set()
-                id_input = Entry(s,bd=3,width = 25)
-                id_input.insert(0,"Input new event")
-                id_input.pack(side=LEFT, padx=10,pady=10)
-                k = Button(s,text='Update',command=send_event)
-                k.pack(side=LEFT, padx=10,pady=10)
-                s.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(s))
-                pass
+
             t = Toplevel()
             t.grab_set()
 
             fr1 = Frame(t)
             fr1.pack()
 
-            fr2 = Frame(t)
-            fr2.pack()
-            
-            fr3 = Frame(t)
-            fr3.pack()
-
             id_ = Entry(fr1,bd=3,width = 25)
             id_.insert(0,'Score ID')
             id_.pack(side = LEFT)
-            check_btn = Button(fr1,text = "Check",bd=3,width = 10,command=check)
-            check_btn.pack(side = LEFT)
-
-            score_btn = Button(fr2,text = "Update score",bd=3,width = 10,command=update_score)
-            score_btn.pack(side = LEFT)
-            time_btn = Button(fr2,text = "Update time",bd=3,width = 10,command=udate_time)
-            time_btn.pack(side = LEFT)
-            event_btn = Button(fr2,text = "Update event",bd=3,width = 10,command=update_event)
-            event_btn.pack(side = LEFT)
+            check_btn = Button(fr1,text = "Update",bd=3,width = 10,command=update_1)
+            check_btn.pack(side = RIGHT)
             t.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(t))
+
         except Exception as e:
             print(e)
             messagebox.showwarning('System','Something went wrong!') 
         pass
 
+    def UPDATE_EVENT(self, id_, club, time_, event_):
+    	self.user_socket.sendall(bytes(UPDATE_EVENT, "utf8"))
+
+    	# send data
+    	self.user_socket.sendall(bytes(id_, "utf8"))
+    	self.user_socket.recv(1)
+    	self.user_socket.sendall(bytes(club, "utf8"))
+    	self.user_socket.recv(1)
+    	self.user_socket.sendall(bytes(time_, "utf8"))
+    	self.user_socket.recv(1)
+    	self.user_socket.sendall(bytes(event_, "utf8"))
+    	self.user_socket.recv(1)
+
+    	flag = self.user_socket.recv(1048).decode("utf8")
+    	self.user_socket.sendall(bytes("1", "utf8"))
+    	if (flag == "1"):
+    		messagebox.showinfo('Update', 'Success')
+    	else:
+    		messagebox.showwarning('Update','failed')
+
     def reload(self):
+        print("reload")
+        # gui lenh
+        self.user_socket.sendall(bytes(RELOAD, "utf8"))
+
+        flag = self.user_socket.recv(1).decode("utf8")
+        self.user_socket.sendall(bytes("1", "utf8"))
+        if flag == '0':
+            messagebox.showinfo('System','Success!')
+        elif flag == '1':
+            messagebox.showwarning('System','Fail')         
+
         pass
 
     def refresh(self):
         try:
             self.user_socket.sendall(bytes(REFRESH,'utf8'))
-            self.user_socket.recv(1).decode('utf8')
+           # self.user_socket.recv(1).decode('utf8')
 
-            y = self.cal.get_date().year
-            m = self.cal.get_date().month
-            d = self.cal.get_date().day
-            self.user_socket.sendall(bytes(y,'utf8'))
+            y = str(self.cal.get_date().year)
+            m = str(self.cal.get_date().month)
+            d = str(self.cal.get_date().day)
+
+            if (len(m) == 1):
+            	m = "0" + m
+            if (len(d) == 1):
+            	d = "0" + d
+
+            date_ = y + "/" + m + "/" + d
+            #send Date
+            self.user_socket.sendall(bytes(date_,'utf8'))
             self.user_socket.recv(1)
-            self.user_socket.sendall(bytes(m,'utf8'))
-            self.user_socket.recv(1)
-            self.user_socket.sendall(bytes(m,'utf8'))
-            self.user_socket.recv(1)
+
+
             for i in self.list_all.get_children():
                 self.list_all.delete(i)
             while True:
@@ -448,13 +415,14 @@ class Admin(Toplevel):
             event_ = self.user_socket.recv(2048).decode('utf8')
             self.user_socket.sendall(bytes('1','utf8'))
 
-            event_time[i] = Label(t,width=8,font=12,borderwidth = 1,relief = 'groove')
+
+            event_time.append(Label(t,width=8,font=12,borderwidth = 1,relief = 'groove'))
             event_time[i].grid(column = 0,row = row)
             event_time[i].configure(text = text)
 
-            event_A[i] = Label(t,width = 20,font = 12,borderwidth = 1,relief = 'groove')
+            event_A.append(Label(t,width = 20,font = 12,borderwidth = 1,relief = 'groove'))
             event_A[i].grid(column = 1,row = row)
-            event_B[i] = Label(t,width = 20,font = 12,borderwidth = 1,relief = 'groove')
+            event_B.append(Label(t,width = 20,font = 12,borderwidth = 1,relief = 'groove'))
             event_B[i].grid(column = 2,row = row)
 
             if event_team == teamA_name:
@@ -464,33 +432,37 @@ class Admin(Toplevel):
             i = i + 1
             row = row + 1
 
-
         t.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(t))
         pass
 
     def search(self):
-        score_id = self.score_id_input.get()
-        print(score_id)
-        if score_id != '':
-            try:
-                self.user_socket.sendall(bytes(SEARCH,'utf8'))
-                self.user_socket.sendall(bytes(score_id,'utf8'))
-                flag = self.user_socket.recv(1).decode('utf8')
-                if flag == '1':
-                    self.detail_dialog()
-                elif flag == '0':
-                    messagebox.showwarning('Search','Cant find that id')
-            except Exception as e:
-                print(e)
-                messagebox.showwarning('System','Something went wrong!')                    
-        pass
+    	try:
+    		score_id = self.score_id_input.get()
+    		print(score_id)
+    		if score_id != '':
+	        	self.user_socket.sendall(bytes(SEARCH,'utf8'))
+	        	self.user_socket.sendall(bytes(score_id,'utf8'))
+	        	self.user_socket.recv(1)
+	        	flag = self.user_socket.recv(1).decode('utf8')
+	        	self.user_socket.sendall(bytes("1", "utf8"))
+	        	print("Flag:" + flag)
+	        	if flag == '1':
+	        		self.detail_dialog()
+	        	elif flag == '0':
+	        		messagebox.showwarning('Search','Cant find that id')
+    	except Exception as e:
+    		print(e)
+    		messagebox.showwarning('System', 'Something went wrong!')
+    	pass
 
     def logout(self):
-        self.grab_release()
-        self.destroy()
-        self.master.deiconify()
-        self.master.grab_set()
-        pass
+    	print("QUIT")
+    	self.user_socket.sendall(bytes(QUIT, "utf8"))
+    	self.grab_release()
+    	self.destroy()
+    	self.master.deiconify()
+    	self.master.grab_set()
+    	pass
 
     def predate(self):
         d = None
@@ -523,11 +495,20 @@ class Admin(Toplevel):
         self.cal.set_date(d)
         pass
 
-    def on_closing(self):
-        self.master.master.destroy()
+    def on_closing(self,func = None):
+        if func == None:
+        	print("QUIT")
+        	self.user_socket.sendall(bytes(QUIT, "utf8"))
+        	self.master.master.destroy()
+        else:
+            func.grab_release()
+            self.grab_set()
+            func.destroy()
+        pass
 
     def run(self):
-        self.mainloop()
+        self.mainloop() 
+        
 class Client(Toplevel):
     def __init__(self,user_socket,master = None):
         super().__init__(master)
@@ -629,11 +610,13 @@ class Client(Toplevel):
 
 
     def logout(self):
-        self.grab_release()
-        self.destroy()
-        self.master.deiconify()
-        self.master.grab_set()
-        pass
+    	print("QUIT")
+    	self.user_socket.sendall(bytes(QUIT, "utf8"))
+    	self.grab_release()
+    	self.destroy()
+    	self.master.deiconify()
+    	self.master.grab_set()
+    	pass
 
     def listAll(self):
         try:
@@ -732,7 +715,6 @@ class Client(Toplevel):
         self.user_socket.sendall(bytes('1','utf8'))
         teamB.configure(text = teamB_name)
 
-        print( text + "  " + teamA_name + "  " + teamB_name)
         # khoang trong
         temp = Label(t,width = 48,font = 12)
         temp.grid(column = 0,row = 1,columnspan = 3)
@@ -755,8 +737,6 @@ class Client(Toplevel):
             event_ = self.user_socket.recv(2048).decode('utf8')
             self.user_socket.sendall(bytes('1','utf8'))
 
-            print(text + "  " + event_team +  "  " + event_)
-
             event_time.append(Label(t,width=8,font=12,borderwidth = 1,relief = 'groove'))
             event_time[i].grid(column = 0,row = row)
             event_time[i].configure(text = text)
@@ -777,37 +757,24 @@ class Client(Toplevel):
         pass
 
     def search(self):
-        score_id = self.score_id_input.get()
-        print(score_id)
-        if score_id != '':
-        	self.user_socket.sendall(bytes(SEARCH,'utf8'))
-        	self.user_socket.sendall(bytes(score_id,'utf8'))
-        	self.user_socket.recv(1)
-        	flag = self.user_socket.recv(1).decode('utf8')
-        	self.user_socket.sendall(bytes("1", "utf8"))
-        	print("Flag:" + flag)
-        	if flag == '1':
-        		self.detail_dialog()
-        	elif flag == '0':
-        		messagebox.showwarning('Search','Cant find that id')
-            # try:
-                # self.user_socket.sendall(bytes(SEARCH,'utf8'))
-
-                # self.user_socket.sendall(bytes(score_id,'utf8'))
-                # self.user_socket.recv(1)
-
-                # flag = self.user_socket.recv(1).decode('utf8')
-                # self.user_socket.sendall(bytes("1", "utf8"))
-
-                # print("Flag:" + flag)
-                # if flag == '1':
-                #     self.detail_dialog()
-                # elif flag == '0':
-                #     messagebox.showwarning('Search','Cant find that id')
-            # except Exception as e:
-            #     print(e)
-            #     messagebox.showwarning('System','Something went wrong!')                    
-        pass
+    	try:
+    		score_id = self.score_id_input.get()
+    		print(score_id)
+    		if score_id != '':
+	        	self.user_socket.sendall(bytes(SEARCH,'utf8'))
+	        	self.user_socket.sendall(bytes(score_id,'utf8'))
+	        	self.user_socket.recv(1)
+	        	flag = self.user_socket.recv(1).decode('utf8')
+	        	self.user_socket.sendall(bytes("1", "utf8"))
+	        	print("Flag:" + flag)
+	        	if flag == '1':
+	        		self.detail_dialog()
+	        	elif flag == '0':
+	        		messagebox.showwarning('Search','Cant find that id')
+    	except Exception as e:
+    		print(e)
+    		messagebox.showwarning('System', 'Something went wrong!')
+    	pass
 
     def predate(self):
         d = None
@@ -842,7 +809,8 @@ class Client(Toplevel):
 
     def on_closing(self,func = None):
         if func == None:
-            self.master.master.destroy()
+        	self.user_socket.sendall(bytes(QUIT, "utf8"))
+        	self.master.master.destroy()
         else:
             func.grab_release()
             self.grab_set()
