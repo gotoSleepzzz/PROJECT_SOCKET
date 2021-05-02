@@ -5,15 +5,47 @@ conn = sqlite3.connect('DATABASE.db')
 
 c = conn.cursor()
 
-name = "admin"
-password = "admin"
+id_ = "123456"
 
-c.execute(
-	"select * from ACCOUNTS"
+name = "TienTri"
+
+
+c.execute("""
+	update ACCOUNTS set STATUS_ = ? 
+
+""", [0]
 )
 
-for i in c:
-	print(i)
+# # # # # date = '2021/4/29'
+# c.execute("select * from ACCOUNTS ")
+
+
+# for i in c:
+# 	print(i[0] + "  " + i[1] + "  " + i[2] + "   " + str(i[3]))
+
+
+# # c.execute(
+# 	update 
+# )
+
+# 	break
+# s = 3
+
+# print(len(str(s)))
+
+
+
+# c.execute("""
+# 	INSERT INTO EVENT_MATCH (ID_MATCH, CLUB, TIME_, EVENT_)
+# 	VALUES ('224697', ' Dacia Buiucani ', '15', 'Marquinhos - Goal'),
+# 		   ('224697', ' Dacia Buiucani ', '31', 'Joao Cancelo - Yellow Card'),
+# 		   ('224697', ' Dacia Buiucani ', '64', 'Kevin De Bruyne - Goal'),
+# 		   ('224697', ' Dinamo-Auto ', '70', 'Leandro Daniel Paredes - Yellow Card'),
+# 		   ('224697', ' Dinamo-Auto ', '71', 'Riyad Mahrez - Goal')
+
+#  """)
+
+
 
 # #___________________ACCOUNT________________________________
 # c.execute(""" 
@@ -26,11 +58,11 @@ for i in c:
 # """)
 
 
-# c.execute("""
-# 	INSERT INTO ACCOUNTS VALUES('admin', 'admin','Admin',0),
-# 							   ('TienTri', '1234', 'Client', 0),
-# 							   ('HuuThong', '1234', 'Client', 0)
-# """)
+# # c.execute("""
+# # 	INSERT INTO ACCOUNTS VALUES('admin', 'admin','Admin',0),
+# # 							   ('TienTri', '1234', 'Client', 0),
+# # 							   ('HuuThong', '1234', 'Client', 0)
+# # """)
 
 # #____________________MATCH___________________________
 # c.execute("""
@@ -47,20 +79,19 @@ for i in c:
 # 	)
 # """)
 
-
 # #_____________________Event_match_____________________
 # c.execute("""
 # 	CREATE TABLE EVENT_MATCH(	
-# 	ID varchar(5) NOT NULL,
-# 	ID_MATCH varchar(5),
+# 	ID_MATCH varchar(10),
 # 	CLUB varchar(50),
 # 	TIME_ varchar(5),
-# 	NAME_PLAYER varchar(50),
-# 	EVENT_ VARCHAR(2), --0: THẺ VÀNG , 1: THẺ ĐỎ, 2: GOAL
-# 	SCORE VARCHAR(10),
-# 	PRIMARY KEY(ID)
+# 	EVENT_ varchar(100)
 # 	)
 # """)
+
+
+
+
 
 conn.commit()
 
